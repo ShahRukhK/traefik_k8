@@ -1,3 +1,4 @@
+# Deployment for Traefik with resource limits, ingress, and storage
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,9 +14,10 @@ spec:
       labels:
         app: traefik
     spec:
+      serviceAccountName: traefik
       containers:
         - name: traefik
-          image: traefik:latest
+          image: traefik:v2.9
           args:
             - --providers.kubernetesIngress
             - --entryPoints.web.address=:80
@@ -23,6 +25,13 @@ spec:
             - --certificatesResolvers.letsencrypt.acme.storage=/data/acme.json
             - --certificatesResolvers.letsencrypt.acme.email=youremail@example.com
             - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
           volumeMounts:
             - name: traefik-data
               mountPath: /data
