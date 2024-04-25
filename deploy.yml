@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      containers:
+        - name: traefik
+          image: traefik:latest
+          args:
+            - --providers.kubernetesIngress
+            - --entryPoints.web.address=:80
+            - --entryPoints.websecure.address=:443
+            - --certificatesResolvers.letsencrypt.acme.storage=/data/acme.json
+            - --certificatesResolvers.letsencrypt.acme.email=youremail@example.com
+            - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+          volumeMounts:
+            - name: traefik-data
+              mountPath: /data
+      volumes:
+        - name: traefik-data
+          persistentVolumeClaim:
+            claimName: traefik-pvc
